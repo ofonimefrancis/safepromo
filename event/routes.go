@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/render"
 )
 
+//Routes Events Routes
 func Routes() *chi.Mux {
 	router := chi.NewRouter()
 
@@ -49,7 +50,8 @@ func GetPromocodeValidity(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error: Expired time")
 		render.Status(r, http.StatusInternalServerError)
 		render.JSON(w, r, map[string]interface{}{
-			"message": "Promo Code has expired",
+			"success": false,
+			"message": "Invalid Promo Code",
 		})
 		return
 	}

@@ -9,36 +9,32 @@ import (
 	"github.com/ofonimefrancis/safepromo/config"
 )
 
-//Event Houses the event and the promocode details associated with the event
-type Event struct {
-	ID               string    `json:"id"`
-	Name             string    `json:"name"`
-	PromoCode        string    `json:"promoCode"`
-	PromoCodeAmount  string    `json:"promoCodeAmount"` //PromoCode Worth
-	NumberOfRides    int       `json:"allowedRides"`
-	CurrentRideCount int       `json:"ridesTaken"`
-	PromoCodeRadius  string    `json:"promoCodeRadius"` //LatLng radius of the event
-	IsEnabled        bool      `json:"isEnabled"`
-	CreatedAt        time.Time `json:"createdAt"`
-	StartDate        time.Time `json:"startDate"`
-	EndDate          time.Time `json:"endDate"` //Expiration date of promo
+//GeoLocation Geofenced coordinates for the event
+type GeoLocation struct {
+	Lat float64 `json:"lat"`
+	Lng float64 `json:"lng"`
 }
 
-//TODO: Functionalities
-// ● Generation of new promo codes for events
-// ● The promo code is worth a specific amount of ride
-// ● The promo code can expire
-// ● Only valid when user’s pickup or destination is within x radius of the event venue
-// ● The promo code radius should be configurable
+//Event Houses the event and the promocode details associated with the event
+type Event struct {
+	ID               string        `json:"id"`
+	Name             string        `json:"name"`
+	PromoCode        string        `json:"promoCode"`
+	PromoCodeAmount  string        `json:"promoCodeAmount"`
+	NumberOfRides    float64       `json:"allowedRides"`
+	CurrentRideCount float64       `json:"ridesTaken"`
+	EventLocation    []GeoLocation `json:"geofence"`
+	IsEnabled        bool          `json:"isEnabled"`
+	CreatedAt        time.Time     `json:"createdAt"`
+	StartDate        time.Time     `json:"startDate"`
+	EndDate          time.Time     `json:"endDate"`
+}
 
 func (e Event) getPromoCodeAmount() string {
 	return e.PromoCodeAmount
 }
 
-//IsExpired Validates if the promocode is expired based on current Time
-//If the current Date is before the startDate
-//Or the current Date is after the endDate
-//PromoCode is expired
+//IsExpired Checks if the Promocode is Expired based on the current time
 func (e Event) IsExpired(currentTime time.Time) bool {
 	return currentTime.Before(e.StartDate) || currentTime.After(e.EndDate)
 }
@@ -48,7 +44,6 @@ func (e Event) AddEvent() error {
 	session := config.Get().Session.Copy()
 	defer session.Close()
 
-	//TODO: Generate PROMOCODE For Event
 	e.PromoCode = uuid.Must(uuid.NewRandom()).String() //Using UUID (Generate Promo Code)
 	e.CreatedAt = time.Now()
 	e.IsEnabled = false //By default promo code is inactive
@@ -96,7 +91,6 @@ func (e Event) Deactivate(promoCode string) error {
 }
 
 //Activate Activates a promo code
-//TODO: We only activate a promocode if the current time is not passed the endDate of the event
 func (e Event) Activate(promoCode string) error {
 	session := config.Get().Session.Copy()
 	defer session.Close()

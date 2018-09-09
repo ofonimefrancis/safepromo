@@ -30,40 +30,36 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("%v\n", requestData)
 
-	fmt.Printf("%v\n", requestData["name"])
-	fmt.Printf("%v\n", requestData["ridesTaken"])
-	fmt.Printf("%v\n", requestData["promoCodeAmount"])
-	fmt.Printf("%v\n", convertStringDateToTime(requestData["startDate"].(string)))
-	// event := Event{
-	// 	Name:             requestData["name"].(string),
-	// 	NumberOfRides:    requestData["ridesTaken"].(int),
-	// 	PromoCodeAmount:  requestData["promoCodeAmount"].(string), //TODO: Change to Integer
-	// 	CurrentRideCount: requestData["allowedRides"].(int),
-	// 	StartDate:        convertStringDateToTime(requestData["startDate"].(string)),
-	// 	EndDate:          convertStringDateToTime(requestData["endDate"].(string)),
-	// }
+	event := Event{
+		Name:             requestData["name"].(string),
+		NumberOfRides:    requestData["ridesTaken"].(float64),
+		PromoCodeAmount:  requestData["promoCodeAmount"].(string), //TODO: Change to Integer
+		CurrentRideCount: requestData["allowedRides"].(float64),
+		StartDate:        convertStringDateToTime(requestData["startDate"].(string)),
+		EndDate:          convertStringDateToTime(requestData["endDate"].(string)),
+	}
 
-	// fmt.Printf("%v\n", event)
+	fmt.Printf("%v\n", event)
 
-	// err = event.AddEvent()
-	// if err != nil {
-	// 	log.Println("Error Adding Event ", err)
-	// 	render.Status(r, http.StatusInternalServerError)
-	// 	render.JSON(w, r, map[string]interface{}{
-	// 		"message": err.Error(),
-	// 	})
-	// 	return
-	// }
+	err = event.AddEvent()
+	if err != nil {
+		log.Println("Error Adding Event ", err)
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, map[string]interface{}{
+			"message": err.Error(),
+		})
+		return
+	}
 
-	// render.Status(r, http.StatusOK)
-	// render.JSON(w, r, map[string]interface{}{
-	// 	"success": true,
-	// })
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, map[string]interface{}{
+		"success": true,
+	})
 }
 
 func convertStringDateToTime(dateTime string) time.Time {
-	timeFormat, _ := time.Parse("2016-08-01", dateTime)
-	return timeFormat
+	t, _ := time.Parse(time.RFC1123, dateTime)
+	return t
 }
 
 //AllPromoCodes Return an array of promocodes from all events
